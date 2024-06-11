@@ -11,6 +11,9 @@ export class Farmacia {
   nome: string;
 
   @Prop({ required: true })
+  razaoSocial: string;
+
+  @Prop({ required: true })
   cnpj: string;
 
   @Prop({ required: true })
