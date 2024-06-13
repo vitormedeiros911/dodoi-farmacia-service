@@ -33,8 +33,8 @@ export class Farmacia {
   })
   endereco: IEndereco;
 
-  // @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Usuario' })
-  // usuario: string;
+  @Prop({ required: true })
+  idUsuarioAdministrador: string;
 }
 
 export const FarmaciaSchema = SchemaFactory.createForClass(Farmacia);

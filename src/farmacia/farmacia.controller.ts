@@ -18,8 +18,8 @@ export class FarmaciaController {
     return this.farmaciaService.buscarFarmaciaPorId(id);
   }
 
-  @MessagePattern('buscar-farmacia-para-produto')
-  async buscarFarmaciaParaProduto(id: string): Promise<Farmacia> {
-    return this.farmaciaService.buscarFarmaciaParaProduto(id);
+  @MessagePattern('buscar-farmacia-reduzida')
+  async buscarFarmaciaReduzida(id: string): Promise<Farmacia> {
+    return this.farmaciaService.buscarFarmaciaReduzida(id);
   }
 }

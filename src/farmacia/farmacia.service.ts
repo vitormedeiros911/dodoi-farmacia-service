@@ -24,7 +24,7 @@ export class FarmaciaService {
     return this.farmaciaModel.findOne({ id });
   }
 
-  async buscarFarmaciaParaProduto(id: string): Promise<Farmacia> {
+  async buscarFarmaciaReduzida(id: string): Promise<Farmacia> {
     const query = this.farmaciaModel
       .findOne()
       .select(['id', 'nome', 'urlImagem'])
