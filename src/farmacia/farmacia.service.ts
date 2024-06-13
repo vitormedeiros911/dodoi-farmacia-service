@@ -19,4 +19,18 @@ export class FarmaciaService {
 
     novaFarmacia.save();
   }
+
+  async buscarFarmaciaPorId(id: string): Promise<Farmacia> {
+    return this.farmaciaModel.findOne({ id });
+  }
+
+  async buscarFarmaciaParaProduto(id: string): Promise<Farmacia> {
+    const query = this.farmaciaModel
+      .findOne()
+      .select(['id', 'nome', 'urlImagem'])
+      .where('id')
+      .equals(id);
+
+    return query.exec();
+  }
 }
