@@ -34,7 +34,10 @@ export class Farmacia {
   endereco: IEndereco;
 
   @Prop({ required: true })
-  idUsuarioAdministrador: string;
+  idUsuarioAdmin: string;
+
+  @Prop({ required: true })
+  emailAdmin: string;
 }
 
 export const FarmaciaSchema = SchemaFactory.createForClass(Farmacia);

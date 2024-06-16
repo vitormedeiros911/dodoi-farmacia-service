@@ -1,23 +1,69 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { RpcException } from '@nestjs/microservices';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { firstValueFrom } from 'rxjs';
 import { v4 as uuid } from 'uuid';
 
+import { ClientProxyService } from '../client-proxy/client-proxy.service';
+import { removeMask } from '../shared/functions/remove-mask';
 import { Farmacia } from './schema/farmacia.schema';
 
 @Injectable()
 export class FarmaciaService {
   constructor(
     @InjectModel('Farmacia') private readonly farmaciaModel: Model<Farmacia>,
+    private readonly clientProxyService: ClientProxyService,
   ) {}
 
-  async criarFarmacia(farmacia: Farmacia): Promise<void> {
+  private clientUsuarioBackend =
+    this.clientProxyService.getClientProxyUsuarioServiceInstance();
+
+  async criarFarmacia(farmacia: Farmacia) {
+    const usuario = await firstValueFrom(
+      this.clientUsuarioBackend.send('buscar-usuario', farmacia.emailAdmin),
+    );
+
+    if (!usuario)
+      throw new RpcException(
+        new NotFoundException(
+          'Não foi possível encontrar o usuário administrador',
+        ),
+      );
+
+    const farmaciaExistente = await this.farmaciaModel
+      .findOne({
+        cnpj: farmacia.cnpj,
+      })
+      .select(['id'])
+      .exec();
+
+    if (farmaciaExistente)
+      throw new RpcException(new BadRequestException('Farmácia já cadastrada'));
+
+    farmacia.cnpj = removeMask(farmacia.cnpj);
+    farmacia.endereco.cep = removeMask(farmacia.endereco.cep);
+
     const novaFarmacia = new this.farmaciaModel({
       id: uuid(),
       ...farmacia,
+      idUsuarioAdmin: usuario.id,
     });
 
-    novaFarmacia.save();
+    await novaFarmacia.save();
+
+    this.clientUsuarioBackend.emit('associar-usuario-admin-farmacia', {
+      idUsuario: usuario.id,
+      idFarmacia: novaFarmacia.id,
+    });
+
+    return {
+      mensagem: 'Farmácia criada com sucesso',
+    };
   }
 
   async buscarFarmaciaPorId(id: string): Promise<Farmacia> {

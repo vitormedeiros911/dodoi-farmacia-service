@@ -10,7 +10,7 @@ export class FarmaciaController {
 
   @EventPattern('criar-farmacia')
   async criarFarmacia(@Payload() farmacia: Farmacia) {
-    await this.farmaciaService.criarFarmacia(farmacia);
+    return this.farmaciaService.criarFarmacia(farmacia);
   }
 
   @MessagePattern('buscar-farmacia-por-id')
