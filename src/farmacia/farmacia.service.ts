@@ -99,7 +99,9 @@ export class FarmaciaService {
       throw new RpcException(new BadRequestException('Farmácia já cadastrada'));
 
     farmacia.cnpj = removeMask(farmacia.cnpj);
-    farmacia.endereco.cep = removeMask(farmacia.endereco?.cep);
+
+    if (farmacia.endereco?.cep)
+      farmacia.endereco.cep = removeMask(farmacia.endereco?.cep);
 
     await this.farmaciaModel.updateOne({ id: farmacia.id }, farmacia);
 
