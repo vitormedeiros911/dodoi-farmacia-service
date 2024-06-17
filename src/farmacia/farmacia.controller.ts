@@ -22,4 +22,9 @@ export class FarmaciaController {
   async buscarFarmaciaReduzida(id: string): Promise<Farmacia> {
     return this.farmaciaService.buscarFarmaciaReduzida(id);
   }
+
+  @MessagePattern('atualizar-farmacia')
+  async atualizarFarmacia(@Payload() farmacia: Farmacia) {
+    return this.farmaciaService.atualizarFarmacia(farmacia);
+  }
 }

@@ -35,6 +35,11 @@ export class FarmaciaService {
         ),
       );
 
+    if (usuario.idFarmacia)
+      throw new RpcException(
+        new BadRequestException('Usuário já possui farmácia associada'),
+      );
+
     const farmaciaExistente = await this.farmaciaModel
       .findOne({
         cnpj: farmacia.cnpj,
@@ -78,5 +83,28 @@ export class FarmaciaService {
       .equals(id);
 
     return query.exec();
+  }
+
+  async atualizarFarmacia(farmacia: Farmacia) {
+    const farmaciaExistente = await this.farmaciaModel
+      .findOne({
+        cnpj: farmacia.cnpj,
+      })
+      .select(['id'])
+      .where('id')
+      .ne(farmacia.id)
+      .exec();
+
+    if (farmaciaExistente)
+      throw new RpcException(new BadRequestException('Farmácia já cadastrada'));
+
+    farmacia.cnpj = removeMask(farmacia.cnpj);
+    farmacia.endereco.cep = removeMask(farmacia.endereco?.cep);
+
+    await this.farmaciaModel.updateOne({ id: farmacia.id }, farmacia);
+
+    return {
+      mensagem: 'Farmácia atualizada com sucesso',
+    };
   }
 }

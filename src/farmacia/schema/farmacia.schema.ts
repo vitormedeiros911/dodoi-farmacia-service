@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
+import { StatusEnum } from '../enum/status.enum';
 import { IEndereco } from '../interface/endereco.interface';
 
 @Schema({ timestamps: true, collection: 'farmacias' })
@@ -38,6 +39,9 @@ export class Farmacia {
 
   @Prop({ required: true })
   emailAdmin: string;
+
+  @Prop({ required: true, default: StatusEnum.ATIVO })
+  status: string;
 }
 
 export const FarmaciaSchema = SchemaFactory.createForClass(Farmacia);
