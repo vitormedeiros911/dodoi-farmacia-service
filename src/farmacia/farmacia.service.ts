@@ -11,6 +11,7 @@ import { v4 as uuid } from 'uuid';
 
 import { ClientProxyService } from '../client-proxy/client-proxy.service';
 import { removeMask } from '../shared/functions/remove-mask';
+import { FiltrosFarmaciaDto } from './dto/filtros-farmacia.dto';
 import { Farmacia } from './schema/farmacia.schema';
 
 @Injectable()
@@ -107,6 +108,32 @@ export class FarmaciaService {
 
     return {
       mensagem: 'Farmácia atualizada com sucesso',
+    };
+  }
+
+  async buscarFarmacias(filtrosFarmaciaDto: FiltrosFarmaciaDto) {
+    const { nome, status, limit, skip } = filtrosFarmaciaDto;
+
+    const query = this.farmaciaModel.find().select(['id', 'nome', 'urlImagem']);
+
+    if (nome) query.where('nome').regex(new RegExp(nome, 'i'));
+
+    if (status) query.where('status').equals(status);
+
+    const countQuery = this.farmaciaModel
+      .find(query.getFilter())
+      .countDocuments();
+
+    if (skip) query.skip(skip);
+
+    if (limit) query.limit(limit);
+
+    const farmacias = await query.exec();
+    const total = await countQuery.exec();
+
+    return {
+      total,
+      farmacias,
     };
   }
 }
