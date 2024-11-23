@@ -35,6 +35,12 @@ export class Farmacia {
   endereco: IEndereco;
 
   @Prop({ required: true })
+  latitude: number;
+
+  @Prop({ required: true })
+  longitude: number;
+
+  @Prop({ required: true })
   idUsuarioAdmin: string;
 
   @Prop({ required: true })
