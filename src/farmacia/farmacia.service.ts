@@ -1,12 +1,7 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { RpcException } from '@nestjs/microservices';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { firstValueFrom } from 'rxjs';
 import { v4 as uuid } from 'uuid';
 
 import { ClientProxyService } from '../client-proxy/client-proxy.service';
@@ -25,22 +20,6 @@ export class FarmaciaService {
     this.clientProxyService.getClientProxyUsuarioServiceInstance();
 
   async criarFarmacia(farmacia: Farmacia) {
-    const usuario = await firstValueFrom(
-      this.clientUsuarioBackend.send('buscar-usuario', farmacia.emailAdmin),
-    );
-
-    if (!usuario)
-      throw new RpcException(
-        new NotFoundException(
-          'Não foi possível encontrar o usuário administrador',
-        ),
-      );
-
-    if (usuario.idFarmacia)
-      throw new RpcException(
-        new BadRequestException('Usuário já possui farmácia associada'),
-      );
-
     const farmaciaExistente = await this.farmaciaModel
       .findOne({
         cnpj: farmacia.cnpj,
@@ -57,19 +36,16 @@ export class FarmaciaService {
     const novaFarmacia = new this.farmaciaModel({
       id: uuid(),
       ...farmacia,
-      idUsuarioAdmin: usuario.id,
     });
 
     await novaFarmacia.save();
 
     this.clientUsuarioBackend.emit('associar-usuario-admin-farmacia', {
-      idUsuario: usuario.id,
+      idUsuario: farmacia.idUsuarioAdmin,
       idFarmacia: novaFarmacia.id,
     });
 
-    return {
-      mensagem: 'Farmácia criada com sucesso',
-    };
+    return this.buscarFarmaciaPorId(novaFarmacia.id);
   }
 
   async buscarFarmaciaPorId(id: string): Promise<Farmacia> {

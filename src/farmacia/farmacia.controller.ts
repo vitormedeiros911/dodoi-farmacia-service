@@ -1,5 +1,5 @@
 import { Controller } from '@nestjs/common';
-import { EventPattern, MessagePattern, Payload } from '@nestjs/microservices';
+import { MessagePattern, Payload } from '@nestjs/microservices';
 
 import { FiltrosFarmaciaDto } from './dto/filtros-farmacia.dto';
 import { FarmaciaService } from './farmacia.service';
@@ -9,7 +9,7 @@ import { Farmacia } from './schema/farmacia.schema';
 export class FarmaciaController {
   constructor(private readonly farmaciaService: FarmaciaService) {}
 
-  @EventPattern('criar-farmacia')
+  @MessagePattern('criar-farmacia')
   async criarFarmacia(@Payload() farmacia: Farmacia) {
     return this.farmaciaService.criarFarmacia(farmacia);
   }
