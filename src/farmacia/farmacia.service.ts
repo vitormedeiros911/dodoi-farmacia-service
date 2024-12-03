@@ -7,6 +7,7 @@ import { v4 as uuid } from 'uuid';
 import { ClientProxyService } from '../client-proxy/client-proxy.service';
 import { removeMask } from '../shared/functions/remove-mask';
 import { FiltrosFarmaciaDto } from './dto/filtros-farmacia.dto';
+import { StatusEnum } from './enum/status.enum';
 import { Farmacia } from './schema/farmacia.schema';
 
 @Injectable()
@@ -81,10 +82,6 @@ export class FarmaciaService {
       farmacia.endereco.cep = removeMask(farmacia.endereco?.cep);
 
     await this.farmaciaModel.updateOne({ id: farmacia.id }, farmacia);
-
-    return {
-      mensagem: 'Farmácia atualizada com sucesso',
-    };
   }
 
   async buscarFarmacias(filtrosFarmaciaDto: FiltrosFarmaciaDto) {
@@ -95,6 +92,7 @@ export class FarmaciaService {
     if (nome) query.where('nome').regex(new RegExp(nome, 'i'));
 
     if (status) query.where('status').equals(status);
+    else query.where('status').equals(StatusEnum.ATIVO);
 
     const countQuery = this.farmaciaModel
       .find(query.getFilter())
@@ -111,5 +109,16 @@ export class FarmaciaService {
       total,
       farmacias,
     };
+  }
+
+  async inativarFarmacia(idFarmacia: string) {
+    await this.farmaciaModel.updateOne(
+      { id: idFarmacia },
+      { status: 'INATIVO' },
+    );
+  }
+
+  async ativarFarmacia(idFarmacia: string) {
+    await this.farmaciaModel.updateOne({ id: idFarmacia }, { status: 'ATIVO' });
   }
 }

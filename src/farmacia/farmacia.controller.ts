@@ -92,4 +92,28 @@ export class FarmaciaController {
       if (filterAckError.length > 0) await channel.ack(originalMsg);
     }
   }
+
+  @EventPattern('inativar-farmacia')
+  async inativarFarmacia(@Payload() id: string, @Ctx() context: RmqContext) {
+    const channel = context.getChannelRef();
+    const originalMsg = context.getMessage();
+
+    try {
+      await this.farmaciaService.inativarFarmacia(id);
+    } finally {
+      await channel.ack(originalMsg);
+    }
+  }
+
+  @EventPattern('ativar-farmacia')
+  async ativarFarmacia(@Payload() id: string, @Ctx() context: RmqContext) {
+    const channel = context.getChannelRef();
+    const originalMsg = context.getMessage();
+
+    try {
+      await this.farmaciaService.ativarFarmacia(id);
+    } finally {
+      await channel.ack(originalMsg);
+    }
+  }
 }
