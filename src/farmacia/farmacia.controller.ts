@@ -48,7 +48,7 @@ export class FarmaciaController {
   }
 
   @MessagePattern('buscar-farmacia-por-id')
-  async buscarFarmaciaPorId(id: string, @Ctx() context: RmqContext) {
+  async buscarFarmaciaPorId(@Payload() id: string, @Ctx() context: RmqContext) {
     const channel = context.getChannelRef();
     const originalMsg = context.getMessage();
 
@@ -60,7 +60,10 @@ export class FarmaciaController {
   }
 
   @MessagePattern('buscar-farmacia-reduzida')
-  async buscarFarmaciaReduzida(id: string, @Ctx() context: RmqContext) {
+  async buscarFarmaciaReduzida(
+    @Payload() id: string,
+    @Ctx() context: RmqContext,
+  ) {
     const channel = context.getChannelRef();
     const originalMsg = context.getMessage();
 
