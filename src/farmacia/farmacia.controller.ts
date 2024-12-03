@@ -1,36 +1,92 @@
 import { Controller } from '@nestjs/common';
-import { MessagePattern, Payload } from '@nestjs/microservices';
+import {
+  Ctx,
+  EventPattern,
+  MessagePattern,
+  Payload,
+  RmqContext,
+} from '@nestjs/microservices';
 
 import { FiltrosFarmaciaDto } from './dto/filtros-farmacia.dto';
 import { FarmaciaService } from './farmacia.service';
 import { Farmacia } from './schema/farmacia.schema';
+
+const ackErrors: string[] = ['E11000'];
 
 @Controller()
 export class FarmaciaController {
   constructor(private readonly farmaciaService: FarmaciaService) {}
 
   @MessagePattern('criar-farmacia')
-  async criarFarmacia(@Payload() farmacia: Farmacia) {
-    return this.farmaciaService.criarFarmacia(farmacia);
+  async criarFarmacia(
+    @Payload() farmacia: Farmacia,
+    @Ctx() context: RmqContext,
+  ) {
+    const channel = context.getChannelRef();
+    const originalMsg = context.getMessage();
+
+    try {
+      return this.farmaciaService.criarFarmacia(farmacia);
+    } finally {
+      await channel.ack(originalMsg);
+    }
   }
 
   @MessagePattern('buscar-farmacias')
-  async buscarFarmacias(@Payload() filtrosFarmaciaDto: FiltrosFarmaciaDto) {
-    return this.farmaciaService.buscarFarmacias(filtrosFarmaciaDto);
+  async buscarFarmacias(
+    @Payload() filtrosFarmaciaDto: FiltrosFarmaciaDto,
+    @Ctx() context: RmqContext,
+  ) {
+    const channel = context.getChannelRef();
+    const originalMsg = context.getMessage();
+
+    try {
+      return this.farmaciaService.buscarFarmacias(filtrosFarmaciaDto);
+    } finally {
+      await channel.ack(originalMsg);
+    }
   }
 
   @MessagePattern('buscar-farmacia-por-id')
-  async buscarFarmaciaPorId(id: string): Promise<Farmacia> {
-    return this.farmaciaService.buscarFarmaciaPorId(id);
+  async buscarFarmaciaPorId(id: string, @Ctx() context: RmqContext) {
+    const channel = context.getChannelRef();
+    const originalMsg = context.getMessage();
+
+    try {
+      return this.farmaciaService.buscarFarmaciaPorId(id);
+    } finally {
+      await channel.ack(originalMsg);
+    }
   }
 
   @MessagePattern('buscar-farmacia-reduzida')
-  async buscarFarmaciaReduzida(id: string): Promise<Farmacia> {
-    return this.farmaciaService.buscarFarmaciaReduzida(id);
+  async buscarFarmaciaReduzida(id: string, @Ctx() context: RmqContext) {
+    const channel = context.getChannelRef();
+    const originalMsg = context.getMessage();
+
+    try {
+      return this.farmaciaService.buscarFarmaciaReduzida(id);
+    } finally {
+      await channel.ack(originalMsg);
+    }
   }
 
-  @MessagePattern('atualizar-farmacia')
-  async atualizarFarmacia(@Payload() farmacia: Farmacia) {
-    return this.farmaciaService.atualizarFarmacia(farmacia);
+  @EventPattern('atualizar-farmacia')
+  async atualizarFarmacia(
+    @Payload() farmacia: Farmacia,
+    @Ctx() context: RmqContext,
+  ) {
+    const channel = context.getChannelRef();
+    const originalMsg = context.getMessage();
+
+    try {
+      await this.farmaciaService.atualizarFarmacia(farmacia);
+    } catch (error) {
+      const filterAckError = ackErrors.filter((ackError) =>
+        error.message.includes(ackError),
+      );
+
+      if (filterAckError.length > 0) await channel.ack(originalMsg);
+    }
   }
 }
